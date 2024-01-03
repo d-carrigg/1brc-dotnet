@@ -44,6 +44,8 @@ The task is to write a Java program which reads the file, calculates the min, me
 
 The dotnet version uses the same program to generate the test data and uses a similar command to run.
 
+The dotnet implementation is stored under `/src/main/csharp`. The core file is `CalculateAverage.cs`. 
+
 This repository contains two programs from the source repo:
 
 * `dev.morling.onebrc.CreateMeasurements` (invoked via _create\_measurements.sh_): Creates the file _measurements.txt_ in the root directory of this project with a configurable number of random measurement values
