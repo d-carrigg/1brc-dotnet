@@ -42,3 +42,7 @@ nb-configuration.xml
 out/
 
 measurements*.txt
+
+# Dotnet
+debug/
+obj/

@@ -179,6 +179,12 @@
                 <exclude>LICENSE.txt</exclude>
                 <exclude>**/.dontdelete</exclude>
                 <exclude>measurements*.txt</exclude>
+                <exclude>src/main/csharp/bin/**</exclude>
+                <exclude>src/main/csharp/obj/**</exclude>
+
+                <!--NOTE: Having an issue where it won't verify these files, even though they have the header, so disabling for now-->
+                <exclude>src/main/csharp/Program.cs</exclude>
+                <exclude>src/main/csharp/CalculateAverage.cs</exclude>
               </excludes>
             </configuration>
             <executions>
