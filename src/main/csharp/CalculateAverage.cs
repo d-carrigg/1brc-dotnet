@@ -15,10 +15,14 @@
  */
 
 namespace BillionRows;
-
 using System.Numerics;
+
 using System.Collections.Concurrent;
-using BenchmarkDotNet.Attributes;
+
+public static class Extensions {
+
+    public static float Round(this float f) => float.Round(f, 1);
+}
 
 internal struct Measurement
 {
@@ -61,12 +65,97 @@ internal struct Measurement
     }
 }
 
- 
+
 public sealed class CalcualteAverage
 {
+    //const string FILENAME = "measurements.txt";
     const string FILENAME = "measurements.txt";
- 
-     
+
+   // based on: https://instil.co/blog/parallelism-on-a-single-core-simd-with-c/
+    public static (float min, float mean, float max) SIMDMinMaxAverage2(float[] input)
+    {
+        var simdLength = Vector<float>.Count;
+        var vmin = new Vector<float>(float.MaxValue);
+        var vmax = new Vector<float>(float.MinValue);
+        var i = 0;
+        float total = 0;
+        float min = float.MaxValue;
+        float max =  float.MinValue;
+        float average = 0;
+
+        // Need to multiply by 2 or we go out of bounds
+        var lastSafeVectorIndex = input.Length - simdLength * 2;
+  
+
+        for (i = 0; i <= lastSafeVectorIndex; i += simdLength)
+        {
+            total = total + input[i] + input[i + 1] + input[i + 2] + input[i + 3];
+            total = total + input[i + 4] + input[i + 5] + input[i + 6] + input[i + 7];
+            var vector = new Vector<float>(input, i);
+            vmin = Vector.Min(vector, vmin);
+            vmax = Vector.Max(vector, vmax);
+        }
+
+        for (var j = 0; j < simdLength; ++j)
+        {
+            min = Math.Min(min, vmin[j]);
+            max = Math.Max(max, vmax[j]);
+        }
+        for (; i < input.Length; ++i)
+        {
+            min = Math.Min(min, input[i]);
+            max = Math.Max(max, input[i]);
+            total += input[i];
+        }
+
+        average = total / input.Length;
+
+        min = min.Round();
+        max = max.Round();
+        average = average.Round();
+
+        return (min, average, max);
+    }
+  
+    public static void CalculateSimd()
+    {
+        var lines = File.ReadLines(Path.GetFullPath(FILENAME));
+        var stationMeasurements = new ConcurrentDictionary<string, List<float>>();
+
+        Parallel.ForEach(lines, line =>
+        {
+            // Split the line into station name and measurement
+            var parts = line.Split(";");
+            var stationName = parts[0];
+            var measurement = float.Parse(parts[1]);
+
+
+            if (stationMeasurements.TryGetValue(stationName, out var value))
+            {
+                value.Add(measurement);
+            }
+            else
+            {
+                stationMeasurements.TryAdd(stationName, [measurement]);
+            }
+        });
+
+        Console.Write("{");
+        var measurements = stationMeasurements.OrderBy(x => x.Key).ToArray();
+        for (var i = 0; i < measurements.Length; i++)
+        {
+            var station = measurements.ElementAt(i);
+            //SIMDMinMaxAverage(station.Value.ToArray(), out var min, out var max, out var average);
+            var (min, average, max) = SIMDMinMaxAverage2([.. station.Value]);
+            Console.Write($"{station.Key}={min:0.0}/{average:0.0}/{max:0.0}");
+            if (i < stationMeasurements.Count - 1)
+            {
+                Console.Write(", ");
+            }
+        }
+        Console.WriteLine("}");
+    }
+
     public static void CalculateFast()
     {
         var lines = File.ReadLines(Path.GetFullPath(FILENAME));
@@ -109,7 +198,7 @@ public sealed class CalcualteAverage
     }
 
 
-     
+
     public static void CalculateBaseline()
     {
         // read everyting into memory
@@ -142,7 +231,7 @@ public sealed class CalcualteAverage
             double mean = station.Value.Average();
             double max = station.Value.Max();
             Console.WriteLine($"{station.Key}={min}/{mean}/{max}");
-             if (i < stationMeasurements.Count - 1)
+            if (i < stationMeasurements.Count - 1)
             {
                 Console.Write(", ");
             }

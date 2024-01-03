@@ -14,7 +14,6 @@
  *  limitations under the License.
  */
 
-using System.Diagnostics;
 
 namespace BillionRows;
 
@@ -22,7 +21,7 @@ public class Program {
  
     public static void Main(string[] args) {
         // run tests
-        CalcualteAverage.CalculateFast();
+        CalcualteAverage.CalculateSimd();
     }
 }
 

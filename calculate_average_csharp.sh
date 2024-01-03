@@ -15,5 +15,5 @@
 #  limitations under the License.
 #
 
-
-time dotnet run --project "./src/main/csharp/1brc.csproj" -c Release -r linux-x64
+dotnet publish "./src/main/csharp/1brc.csproj" -c Release -r linux-x64 
+time /home/dcarrigg/1brc-dotnet/src/main/csharp/bin/Release/net8.0/linux-x64/publish/1brc
