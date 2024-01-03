@@ -76,7 +76,19 @@ Execute the following steps to run the challenge:
 
     I have two implementations so far, a simple implementation that reads in all the lines of text, and a faster implementation that uses Parallel.ForEach and ConcurrentDictionary to process the file in parallel.
 
+## Limitations/TODO
 
+* The benchmarking needs to be improved (wonder if there is a good way to use BenchmarkDotNet for this).
+* I'm sure there are a ton of optimizations that can be made to the code.
+
+## Results
+
+For now, I am only running comparisons on my machine, running under WSL2. But Ran both the `calculate_average.sh` and `calculate_average_csharp.sh` scripts and got the following results:
+
+| Implementation | Time (s) |
+| -------------- | -------- |
+| Java           |  92.89 user 4.32 system 1:36.03 elapsed     |
+| C#             |  42.551  |
 
 ## Rules from the Java version:
 
