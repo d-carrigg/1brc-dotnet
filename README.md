@@ -87,8 +87,8 @@ For now, I am only running comparisons on my machine, running under WSL2. But Ra
 
 | Implementation | Time (s) |
 | -------------- | -------- |
-| Java           |  92.89 user 4.32 system 1:36.03 elapsed     |
-| C#             |  42.551  |
+| Java           |  93.79user 6.72system 1:39.33elapsed 101%CPU    |
+| C#             |  291.13user 29.72system 1:00.13elapsed  |
 
 ## Rules from the Java version:
 

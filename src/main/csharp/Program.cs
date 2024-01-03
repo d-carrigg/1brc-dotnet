@@ -14,20 +14,15 @@
  *  limitations under the License.
  */
 
-
-
-using System.Numerics;
-using System.Text;
+using System.Diagnostics;
 
 namespace BillionRows;
-
 
 public class Program {
  
     public static void Main(string[] args) {
-        var time = DateTime.Now;
+        // run tests
         CalcualteAverage.CalculateFast();
-        Console.WriteLine($"User: {DateTime.Now - time}");
     }
 }
 

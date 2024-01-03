@@ -16,4 +16,4 @@
 #
 
 
-dotnet run --project "./src/main/csharp/1brc.csproj" -c Release -r linux-x64
+time dotnet run --project "./src/main/csharp/1brc.csproj" -c Release -r linux-x64

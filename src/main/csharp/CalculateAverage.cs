@@ -18,6 +18,7 @@ namespace BillionRows;
 
 using System.Numerics;
 using System.Collections.Concurrent;
+using BenchmarkDotNet.Attributes;
 
 internal struct Measurement
 {
@@ -60,10 +61,12 @@ internal struct Measurement
     }
 }
 
+ 
 public sealed class CalcualteAverage
 {
     const string FILENAME = "measurements.txt";
  
+     
     public static void CalculateFast()
     {
         var lines = File.ReadLines(Path.GetFullPath(FILENAME));
@@ -106,8 +109,8 @@ public sealed class CalcualteAverage
     }
 
 
-
-    public void CalculateBaseline()
+     
+    public static void CalculateBaseline()
     {
         // read everyting into memory
         var lines = File.ReadAllLines(FILENAME);
