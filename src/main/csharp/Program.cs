@@ -17,11 +17,41 @@
 
 namespace BillionRows;
 
-public class Program {
- 
-    public static void Main(string[] args) {
-        // run tests
-        CalcualteAverage.CalculateSimd();
+public class Program
+{
+
+    public static void Main(string[] args)
+    {
+
+        // if the first arg passed in matches SIMD, PARALLEL, BASELINE
+        // then run the corresponding test
+        if (args.Length > 0)
+        {
+             Console.WriteLine($"Running {args[0]} test");
+            switch (args[0].ToUpper())
+            {
+                case "SIMD":
+                   
+                    CalcualteAverage.CalculateSimd();
+                    return;
+                case "PARALLEL":
+                    CalcualteAverage.CalculateParallel();
+                    return;
+                case "BASELINE":
+                    CalcualteAverage.CalculateBaseline();
+                    return;
+                default:
+                    Console.WriteLine("Unknown argument: " + args[0]);
+                    return;
+            }
+        }
+        else
+        {
+            // run tests
+            CalcualteAverage.CalculateBaseline();
+        }
+
+
     }
 }
 

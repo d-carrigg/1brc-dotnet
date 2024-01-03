@@ -83,12 +83,14 @@ Execute the following steps to run the challenge:
 
 ## Results
 
-For now, I am only running comparisons on my machine, running under WSL2. But Ran both the `calculate_average.sh` and `calculate_average_csharp.sh` scripts and got the following results:
+For now, I am only running comparisons on my machine under WSL2. All tests were run on the same machine. I would like to run these on standard hardware at some point. Here are the results:
 
-| Implementation | Time (s) |
-| -------------- | -------- |
-| Java           |  93.79user 6.72system 1:39.33elapsed 101%CPU    |
-| C#             |  291.13user 29.72system 1:00.13elapsed  |
+| Implementation | Time (m:s:ms) |
+| -------------- | ------------- |
+| Java (Baseline)| 1:34:00       |
+| C# (Baseline)  | DNF           |
+| C# Parallel    | 0:50:06       |
+| C# SIMD        | 1:01.00       |
 
 ## Rules from the Java version:
 

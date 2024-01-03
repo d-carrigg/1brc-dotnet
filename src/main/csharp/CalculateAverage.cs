@@ -122,7 +122,8 @@ public sealed class CalcualteAverage
         var lines = File.ReadLines(Path.GetFullPath(FILENAME));
         var stationMeasurements = new ConcurrentDictionary<string, List<float>>();
 
-        Parallel.ForEach(lines, line =>
+        Parallel.ForEach(lines,
+         line =>
         {
             // Split the line into station name and measurement
             var parts = line.Split(";");
@@ -156,7 +157,7 @@ public sealed class CalcualteAverage
         Console.WriteLine("}");
     }
 
-    public static void CalculateFast()
+    public static void CalculateParallel()
     {
         var lines = File.ReadLines(Path.GetFullPath(FILENAME));
         var stationMeasurements = new ConcurrentDictionary<string, Measurement>();
