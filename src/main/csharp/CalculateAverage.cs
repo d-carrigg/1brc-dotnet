@@ -66,13 +66,7 @@ public sealed class CalcualteAverage
  
     public static void CalculateFast()
     {
-        // var time = DateTime.Now;
-        // read the file
         var lines = File.ReadLines(Path.GetFullPath(FILENAME));
-        // Console.WriteLine($"Read file in {(DateTime.Now - time).TotalMilliseconds} ms");
-        // time = DateTime.Now;
-
-        // create a dictionary to store the station name and the list of measurements
         var stationMeasurements = new ConcurrentDictionary<string, Measurement>();
 
         Parallel.ForEach(lines, line =>
@@ -82,16 +76,13 @@ public sealed class CalcualteAverage
             var stationName = parts[0];
             var measurement = float.Parse(parts[1]);
 
-            // Check if the station name is already in the dictionary
+
             if (stationMeasurements.TryGetValue(stationName, out var value))
             {
                 value.Total += measurement;
                 value.Min = Math.Min(value.Min, measurement);
                 value.Max = Math.Max(value.Max, measurement);
-
-                // calculate running average
                 value.Count++;
-
                 stationMeasurements[stationName] = value;
             }
             else
@@ -100,43 +91,28 @@ public sealed class CalcualteAverage
             }
         });
 
-        //Console.WriteLine($"Parsed Stations in {(DateTime.Now - time).TotalMilliseconds} ms");
-        // time = DateTime.Now;
-
         Console.Write("{");
-        // Loop through the dictionary
         var measurements = stationMeasurements.OrderBy(x => x.Key).ToArray();
-        for (var i = 0; i < stationMeasurements.Count; i++)
+        for (var i = 0; i < measurements.Length; i++)
         {
             var station = measurements.ElementAt(i);
-            // Calculate the min, mean, and max temperature
-
-
-            // Print the result
             Console.Write(station.Value);
-
             if (i < stationMeasurements.Count - 1)
             {
                 Console.Write(", ");
             }
         }
-
         Console.WriteLine("}");
-        //Console.WriteLine($"Calculated Averages and printed in {(DateTime.Now - time).TotalMilliseconds} ms");
     }
 
 
 
     public void CalculateBaseline()
     {
-        // Read the file
+        // read everyting into memory
         var lines = File.ReadAllLines(FILENAME);
-
-
-        // Create a dictionary to store the station name and the list of measurements
         Dictionary<string, List<double>> stationMeasurements = new Dictionary<string, List<double>>();
 
-        // Loop through the lines
         foreach (string line in lines)
         {
             // Split the line into station name and measurement
@@ -144,32 +120,30 @@ public sealed class CalcualteAverage
             string stationName = parts[0];
             double measurement = double.Parse(parts[1]);
 
-            // Check if the station name is already in the dictionary
-            if (stationMeasurements.ContainsKey(stationName))
+            if (stationMeasurements.TryGetValue(stationName, out List<double>? value))
             {
-                // Add the measurement to the list
-                stationMeasurements[stationName].Add(measurement);
+                value.Add(measurement);
             }
             else
             {
-                // Create a new list with the measurement and add it to the dictionary
-                List<double> measurements = new List<double>();
-                measurements.Add(measurement);
+                List<double> measurements = [measurement];
                 stationMeasurements.Add(stationName, measurements);
             }
         }
 
         Console.Write("{");
-        // Loop through the dictionary
-        foreach (KeyValuePair<string, List<double>> station in stationMeasurements)
+        for (var i = 0; i < stationMeasurements.Count; i++)
         {
-            // Calculate the min, mean, and max temperature
+            var station = stationMeasurements.ElementAt(i);
             double min = station.Value.Min();
             double mean = station.Value.Average();
             double max = station.Value.Max();
-
-            // Print the result
-            Console.WriteLine($"{station.Key}: min = {min}, mean = {mean}, max = {max}");
+            Console.WriteLine($"{station.Key}={min}/{mean}/{max}");
+             if (i < stationMeasurements.Count - 1)
+            {
+                Console.Write(", ");
+            }
         }
+        Console.WriteLine("}");
     }
 }
