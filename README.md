@@ -1,6 +1,6 @@
 # DOTNET fork of: 1️⃣🐝🏎️ The One Billion Row Challenge
 
-_This is a fork of the [original Java version](https://github.com/gunnarmorling/1brc) of the challenge, adapted for .NET. Very early on in the process but I wanted to see how fast .NET could be. Shout out to this post for the inspiration: https://twitter.com/KooKiz/status/1742168051724775559
+This is a fork of the [original Java version](https://github.com/gunnarmorling/1brc) of the challenge, adapted for .NET. Very early on in the process but I wanted to see how fast .NET could be. Shout out to this post for the inspiration: https://twitter.com/KooKiz/status/1742168051724775559
 
 ## Orignal Description:
 
