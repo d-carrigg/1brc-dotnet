@@ -20,19 +20,21 @@ namespace BillionRows;
 public class Program
 {
 
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
 
         // if the first arg passed in matches SIMD, PARALLEL, BASELINE
         // then run the corresponding test
         if (args.Length > 0)
         {
-             Console.WriteLine($"Running {args[0]} test");
+            Console.WriteLine($"Running {args[0]} test");
             switch (args[0].ToUpper())
             {
+                case "ASYNC":
+                    await CalcualteAverage.CalculateAsync();
+                    return;
                 case "SIMD":
-                   
-                    CalcualteAverage.CalculateSimd();
+                    CalcualteAverage.CalculateSimd3();
                     return;
                 case "PARALLEL":
                     CalcualteAverage.CalculateParallel();
