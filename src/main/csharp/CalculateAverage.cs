@@ -18,6 +18,7 @@ namespace BillionRows;
 using System.Numerics;
 
 using System.Collections.Concurrent;
+using System.Text;
 
 public static class Extensions
 {
@@ -62,7 +63,10 @@ internal struct Measurement
     }
 
     // extracted in case I need to change it later
-    private float Round(float f) => float.Round(f, 1);
+    private static float Round(float f)
+    {
+        return float.Round(f, 1);
+    }
 
     public (float min, float mean, float max) Summarize()
     {
@@ -72,7 +76,74 @@ internal struct Measurement
 
     public override string ToString()
     {
-        return $"{Key}={Round(Min):0.0}/{Round(Total / Count):0.0}/{Round(Max):0.0}";
+        return Key + "=" + Round(Min).ToString("0.0") + "/" + Round(Total / Count).ToString("0.0") + "/" + Round(Max).ToString("0.0");
+        //return $"{Key}={Round(Min):0.0}/{Round(Total / Count):0.0}/{Round(Max):0.0}";
+    }
+
+    public void AppendTo(StringBuilder sb)
+    {
+        sb.Append(Key);
+        sb.Append('=');
+        sb.Append(Round(Min).ToString("0.0"));
+        sb.Append('/');
+        sb.Append(Round(Total / Count).ToString("0.0"));
+        sb.Append('/');
+        sb.Append(Round(Max).ToString("0.0"));
+    }
+
+}
+
+internal struct MeasurementSlim
+{
+    public string Key { get; set; }
+    public float Min { get; set; }
+    public float Max { get; set; }
+
+    public float Average { get; set; }
+
+    public int Count { get; set; }
+
+    public MeasurementSlim(string key, float value)
+    {
+        Key = key;
+        Min = value;
+        Max = value;
+        Count = 1;
+    }
+
+    public MeasurementSlim(string key, float min, float max, float average, int count)
+    {
+        Key = key;
+        Min = min;
+        Max = max;
+        Average = average;
+        Count = count;
+    }
+
+    // this is the most disgusting way I could think of to implement this
+    public static MeasurementSlim operator +(MeasurementSlim value, float measurement)
+    {
+
+        value.Min = Math.Min(value.Min, measurement);
+        value.Max = Math.Max(value.Max, measurement);
+
+        value.Average = value.Average * (value.Count - 1) / value.Count + measurement / value.Count;
+
+        return value;
+    }
+
+    // extracted in case I need to change it later
+    private float Round(float f) => float.Round(f, 1);
+
+    public (float min, float mean, float max) Summarize()
+    {
+        return (Round(Min), Round(Average), Round(Max));
+
+    }
+
+    public override string ToString()
+    {
+        return $"{Key}={Round(Min):0.0}/{Round(Average):0.0}/{Round(Max):0.0}";
     }
 }
 
@@ -131,7 +202,6 @@ public sealed class CalcualteAverage
         var stationMeasurements = new ConcurrentDictionary<string, Measurement>();
 
         Parallel.ForEach(lines,
-           new ParallelOptions { MaxDegreeOfParallelism = 20 },
         line =>
         {
             // Split the line into station name and measurement
@@ -151,7 +221,6 @@ public sealed class CalcualteAverage
         });
 
         Console.Write("{");
-        //var measurements = stationMeasurements.OrderBy(x => x.Key).ToArray();
         var measurements = new SortedDictionary<string, Measurement>(stationMeasurements);
         for (var i = 0; i < measurements.Count - 1; i++)
         {
@@ -161,6 +230,83 @@ public sealed class CalcualteAverage
         }
         Console.Write(measurements.ElementAt(measurements.Count - 1).Value);
         Console.WriteLine("}");
+    }
+
+
+    // use Parallel.ForEach to parse the file and calculate the min, max, and average
+    public static void CalculateParallel2()
+    {
+        var lines = File.ReadLines(Path.GetFullPath(FILENAME));
+        var stationMeasurements = new ConcurrentDictionary<string, MeasurementSlim>();
+
+        Parallel.ForEach(lines,
+        line =>
+        {
+            // Split the line into station name and measurement
+            var spa = line.AsSpan();
+            var stationName = spa[..spa.IndexOf(';')].ToString();
+            float measurement = float.Parse(spa[(spa.IndexOf(';') + 1)..]);
+
+
+            if (stationMeasurements.TryGetValue(stationName, out MeasurementSlim value))
+            {
+                stationMeasurements[stationName] = value + measurement; // love operator overloading 
+            }
+            else
+            {
+                stationMeasurements.TryAdd(stationName, new MeasurementSlim(stationName, measurement));
+            }
+        });
+
+        Console.Write("{");
+        //var measurements = stationMeasurements.OrderBy(x => x.Key).ToArray();
+        var measurements = new SortedDictionary<string, MeasurementSlim>(stationMeasurements);
+        for (var i = 0; i < measurements.Count - 1; i++)
+        {
+            var station = measurements.ElementAt(i);
+            Console.Write(station.Value);
+            Console.Write(", ");
+        }
+        Console.Write(measurements.ElementAt(measurements.Count - 1).Value);
+        Console.WriteLine("}");
+    }
+
+    // use Parallel.ForEach to parse the file and calculate the min, max, and average
+    public static void CalculateParallel3()
+    {
+        var lines = File.ReadLines(Path.GetFullPath(FILENAME));
+        var stationMeasurements = new ConcurrentDictionary<string, Measurement>();
+
+        Parallel.ForEach(lines,
+        line =>
+        {
+            // Split the line into station name and measurement
+            var spa = line.AsSpan();
+            var stationName = spa[..spa.IndexOf(';')].ToString();
+            float measurement = float.Parse(spa[(spa.IndexOf(';') + 1)..]);
+
+
+            if (stationMeasurements.TryGetValue(stationName, out Measurement value))
+            {
+                stationMeasurements[stationName] = value + measurement; // love operator overloading 
+            }
+            else
+            {
+                stationMeasurements.TryAdd(stationName, new Measurement(stationName, measurement));
+            }
+        });
+        var sb = new StringBuilder();
+        sb.Append('{');
+
+        var measurements = new SortedDictionary<string, Measurement>(stationMeasurements);
+        for (var i = 0; i < measurements.Count - 1; i++)
+        {
+            var station = measurements.ElementAt(i);
+            station.Value.AppendTo(sb);
+        }
+        measurements.ElementAt(measurements.Count - 1).Value.AppendTo(sb);
+        sb.Append('}');
+        Console.WriteLine(sb.ToString());
     }
 
 
@@ -368,8 +514,10 @@ public sealed class CalcualteAverage
         Parallel.ForEach(stationMeasurements,
          station =>
          {
-             var (min, average, max) = SIMDMinMaxAverage2([.. station.Value]);
-             results.TryAdd(station.Key, $"{station.Key}={min:0.0}/{average:0.0}/{max:0.0}");
+             //var (min, average, max) = SIMDMinMaxAverage2([.. station.Value]);
+             //results.TryAdd(station.Key, $"{station.Key}={min:0.0}/{average:0.0}/{max:0.0}");
+             var res = SIMDMinMaxAverage3([.. station.Value]);
+             results.TryAdd(station.Key, $"{station.Key}={res.Min:0.0}/{res.Average:0.0}/{res.Max:0.0}");
          }
         );
 
@@ -434,5 +582,66 @@ public sealed class CalcualteAverage
         average = average.Round();
 
         return (min, average, max);
+    }
+
+
+    private readonly struct MinMaxAverage
+    {
+        public float Min { get; }
+        public float Max { get; }
+        public float Average { get; }
+
+        public MinMaxAverage(float min, float max, float average)
+        {
+            Min = min;
+            Max = max;
+            Average = average;
+        }
+
+    }
+    private static MinMaxAverage SIMDMinMaxAverage3(float[] input)
+    {
+        var simdLength = Vector<float>.Count;
+        var vmin = new Vector<float>(float.MaxValue);
+        var vmax = new Vector<float>(float.MinValue);
+        var i = 0;
+        float total = 0;
+        Span<float> floats = stackalloc float[3];
+        float min = float.MaxValue;
+        float max = float.MinValue;
+        float average = 0;
+
+        // Need to multiply by 2 or we go out of bounds
+        var lastSafeVectorIndex = input.Length - simdLength * 2;
+
+
+        for (i = 0; i <= lastSafeVectorIndex; i += simdLength)
+        {
+            total = total + input[i] + input[i + 1] + input[i + 2] + input[i + 3];
+            total = total + input[i + 4] + input[i + 5] + input[i + 6] + input[i + 7];
+            var vector = new Vector<float>(input, i);
+            vmin = Vector.Min(vector, vmin);
+            vmax = Vector.Max(vector, vmax);
+        }
+
+        for (var j = 0; j < simdLength; ++j)
+        {
+            min = Math.Min(min, vmin[j]);
+            max = Math.Max(max, vmax[j]);
+        }
+        for (; i < input.Length; ++i)
+        {
+            min = Math.Min(min, input[i]);
+            max = Math.Max(max, input[i]);
+            total += input[i];
+        }
+
+        average = total / input.Length;
+
+        min = min.Round();
+        max = max.Round();
+        average = average.Round();
+
+        return new MinMaxAverage(min, max, average);
     }
 }

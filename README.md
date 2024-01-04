@@ -78,19 +78,32 @@ Execute the following steps to run the challenge:
 
 ## Limitations/TODO
 
-* The benchmarking needs to be improved (wonder if there is a good way to use BenchmarkDotNet for this).
-* I'm sure there are a ton of optimizations that can be made to the code.
+* Only setup to run on Linux.
+* More optimizations can be made
+
+
+## What I've tried so far
+
+* Async
+* Parallel.ForEach
+* SIMD
+* SIMD + Parallel.ForEach
+* Stackalloc
+* Spans
 
 ## Results
 
-For now, I am only running comparisons on my machine under WSL2. All tests were run on the same machine. I would like to run these on standard hardware at some point. Here are the results:
+For now, I am only running comparisons on my machine under WSL2. All tests were run on the same machine. So I would pay attention more to performanece relative to the Java versions rather than raw times. Here are the results:
 
-| Implementation | Time (m:s:ms) |
-| -------------- | ------------- |
-| Java (Baseline)| 1:34:00       |
-| C# (Baseline)  | DNF           |
-| C# Parallel    | 0:50:06       |
-| C# SIMD        | 1:01.00       |
+| Implementation  | Time (m:s:ms) |
+| --------------- | ------------- |
+| Java (Baseline) | 1:34:00       |
+| C# (Baseline)   | DNF           |
+| C# Parallel     | ~0:43:00      |
+| C# SIMD         | ~0:53.00      |
+
+
+By my testing, so far, not using SIMD and using Parallel.ForEach is the fastest implementation. 
 
 ## Rules from the Java version:
 

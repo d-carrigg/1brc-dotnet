@@ -37,7 +37,7 @@ public class Program
                     CalcualteAverage.CalculateSimd3();
                     return;
                 case "PARALLEL":
-                    CalcualteAverage.CalculateParallel();
+                    CalcualteAverage.CalculateParallel3();
                     return;
                 case "BASELINE":
                     CalcualteAverage.CalculateBaseline();
